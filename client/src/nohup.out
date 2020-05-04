@@ -1,0 +1,56 @@
+
+> tracker@0.1.0 start /root/CamelTrack/client
+> react-scripts start
+
+[34mℹ[39m [90m｢wds｣[39m: Project is running at http://0.0.0.0:3000/
+[34mℹ[39m [90m｢wds｣[39m: webpack output is served from 
+[34mℹ[39m [90m｢wds｣[39m: Content not from webpack is served from /root/CamelTrack/client/public
+[34mℹ[39m [90m｢wds｣[39m: 404s will fallback to /
+Starting the development server...
+
+events.js:174
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: EBADF: bad file descriptor, read
+Emitted 'error' event at:
+    at lazyFs.read (internal/fs/streams.js:165:12)
+    at FSReqWrap.wrapper [as oncomplete] (fs.js:467:17)
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! tracker@0.1.0 start: `react-scripts start`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the tracker@0.1.0 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /root/.npm/_logs/2020-03-23T00_35_41_935Z-debug.log
+
+> tracker@0.1.0 start /root/CamelTrack/client
+> react-scripts start
+
+[34mℹ[39m [90m｢wds｣[39m: Project is running at http://0.0.0.0:3000/
+[34mℹ[39m [90m｢wds｣[39m: webpack output is served from 
+[34mℹ[39m [90m｢wds｣[39m: Content not from webpack is served from /root/CamelTrack/client/public
+[34mℹ[39m [90m｢wds｣[39m: 404s will fallback to /
+Starting the development server...
+
+events.js:174
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: EBADF: bad file descriptor, read
+Emitted 'error' event at:
+    at lazyFs.read (internal/fs/streams.js:165:12)
+    at FSReqWrap.wrapper [as oncomplete] (fs.js:467:17)
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! tracker@0.1.0 start: `react-scripts start`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the tracker@0.1.0 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /root/.npm/_logs/2020-03-23T00_36_11_939Z-debug.log

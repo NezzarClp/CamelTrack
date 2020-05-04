@@ -1,0 +1,22 @@
+{
+    "dependencies": {
+        "bluebird": "^3.7.2",
+        "express": "^4.17.1",
+        "express-graphql": "^0.9.0",
+        "googleapis": "^48.0.0",
+        "graphql": "^14.6.0",
+        "ioredis": "^4.16.0",
+        "pg": "^8.0.0"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.9.0",
+        "babel-core": "^6.26.3",
+        "babel-polyfill": "^6.26.0",
+        "babel-preset-env": "^1.7.0",
+        "gulp": "^4.0.2",
+        "gulp-babel": "^8.0.0"
+    },
+    "scripts": {
+        "start": "gulp build && node ./build/index.js"
+    }
+}

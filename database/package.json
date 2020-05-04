@@ -1,0 +1,18 @@
+{
+    "scripts": {
+        "build": "npx gulp build",
+        "execute": "npx gulp build && node build/index.js"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.9.0",
+        "babel-core": "^6.26.3",
+        "babel-polyfill": "^6.26.0",
+        "babel-preset-env": "^1.7.0",
+        "gulp": "^4.0.2",
+        "gulp-babel": "^8.0.0"
+    },
+    "dependencies": {
+        "bluebird": "^3.7.2",
+        "pg": "^8.0.0"
+    }
+}

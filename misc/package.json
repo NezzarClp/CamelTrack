@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "ioredis": "^4.16.1",
+    "pg": "^8.0.0",
+    "wanakana": "^4.0.2"
+  }
+}

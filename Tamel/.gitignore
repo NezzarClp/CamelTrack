@@ -1,0 +1,5 @@
+src/config/credentials/**
+node_modules/
+temp/
+.env
+build/
