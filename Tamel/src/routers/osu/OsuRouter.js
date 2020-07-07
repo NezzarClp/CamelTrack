@@ -136,8 +136,9 @@ export default class OsuRouter {
         const discordMessage = new DiscordMessage(channel);
 
         const sheetId = this._fetchSheetId(params[1]);
+        const collectionId = params[2];
 
-        const remainParams = params.slice(2).join(' ');
+        const remainParams = params.slice(3).join(' ');
         const match = remainParams.match(/^"([^"]*)"\s*"([^"]*)"$/);
 
         if (!match) {
@@ -181,18 +182,12 @@ export default class OsuRouter {
 
                 fetchedBidInfos.push({ bid, sid, name: `${mapData.artist} - ${mapData.title}`  });
 
-                console.log('received sid', sid);
-
                 const { data } = await axios.get(`https://txy1.sayobot.cn/beatmaps/download/full/${sid}?server=0`, { responseType: 'stream' });
                 // const { data } = await axios.get(`https://bloodcat.com/osu/s/${sid}`, { responseType: 'stream' });
 
-                console.log('received data...');
-
                 await (new Promise((resolve, reject) => {
-                    const writeStream = fs.createWriteStream(`./temp/osz/${sid}.osz`);
+                    const writeStream = fs.createWriteStream(`../storage/osz/${sid}.osz`);
 
-                    console.log('debug', 'received writeStream');
-                    
                     data.on('error', (err) => { reject(err); });
                     data.on('end', () => { resolve(); });
 
@@ -200,8 +195,6 @@ export default class OsuRouter {
                 }));
 
                 const message = fetchedBidInfos.map(({bid, sid, name}) => (`${bid} ==> ${sid} ==> ${name}`)).join('\n');
-
-                console.log('writing message...');
 
                 await discordMessage.modify(`Fetched: (${fetchedBidInfos.length} / ${uniqueBids.length})\n${message}`);
             });
@@ -211,7 +204,7 @@ export default class OsuRouter {
             progressMessage.send('Zipping...');
 
             const zipId = Date.now();
-            const command = `zip ./temp/zip/${zipId}.zip `.concat(fetchedBidInfos.map(({ sid }) => `./temp/osz/${sid}.osz`).join(' '));
+            const command = `zip ../storage/zip/${zipId}.zip `.concat(fetchedBidInfos.map(({ sid }) => `../storage/osz/${sid}.osz`).join(' '));
 
             await execPromise(command);
 
@@ -227,13 +220,14 @@ export default class OsuRouter {
                 return md5(data);
             });
             const parser = new CollectionDbParser();
-            const osuBuffer = new OsuBuffer(fs.readFileSync('./temp/collection/collection.db')); 
+            const osuBuffer = new OsuBuffer(fs.readFileSync(`../storage/collection/collection.db-${collectionId}`));
+            const newCollectionName = `collection.db-${Date.now()}`;
 
             parser.parse(osuBuffer);
             parser.injectCollection(collectionName, md5s);
-            parser.write('./temp/collection/collection.new.db');
+            parser.write(`../storage/collection/${newCollectionName}`);
 
-            collectionMessage.modify(`Injected ${collectionName} http://142.93.195.94/public/collection/collection.new.db`);
+            collectionMessage.modify(`Injected ${collectionName} http://142.93.195.94/public/collection/${newCollectionName}`);
         } catch (err) {
             console.error('Failed to fetch osu details', err);
 

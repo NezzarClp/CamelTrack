@@ -35,6 +35,55 @@ export default class WordDao {
         }
     }
 
+    async getById(id) {
+        try {
+            const { rows } = await this._postgresPool.query(`
+                SELECT * FROM "word"
+                WHERE "id" = $1;
+            `, [id]);
+
+            return rows;
+        } catch (err) {
+            console.error('Failed to get by ID');
+            console.error(err);
+            console.error(kanji);
+
+            throw err;
+        }
+    }
+
+    async delete(id) {
+        let connection;
+        try {
+            connection = await this._postgresPool.connect();
+            await connection.query('START TRANSACTION');
+            await connection.query(`
+                DELETE FROM "Questions"
+                WHERE "wordId" = $1;
+            `, [id]);
+
+            await connection.query(`
+                DELETE FROM "word"
+                WHERE "id" = $1;
+            `, [id]);
+
+            await connection.query('COMMIT');
+            await connection.release();
+
+            console.log('Ok');
+        } catch (err) {
+            console.error('Failed to delete by ID');
+            console.error(err);
+            console.error(id);
+
+            if (connection) {
+                await connection.release();
+            }
+
+            throw err;
+        }
+    }
+
     async insert(record) {
         try {
             const { romaji, kanji, english } = record;
@@ -71,4 +120,22 @@ export default class WordDao {
             throw err;
         }
     }
-};
+
+    async getRandomWord(count) {
+        try {
+            const { rows } = await this._postgresPool.query(`
+                SELECT "id", "romaji", "kanji", "english_meaning" FROM "word"
+                ORDER BY RANDOM()
+                LIMIT $1
+            `, [count]);
+
+            return rows;
+        } catch (err) {
+            console.error('Failed to get random words');
+            console.error(err);
+            console.error(count);
+
+            throw err;
+        }
+    }
+}

@@ -5,8 +5,6 @@ import { useQuery } from '@apollo/react-hooks';
 
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-
-import UsageChart from '../components/Chart/UsageChart.react.js';
 import WordTable from '../components/Table/WordTable.react.js';
 
 const useStyles = makeStyles({
@@ -41,6 +39,14 @@ const GET_NUM = gql`
     }
 `;
 
+const GET_QUESTION = gql`
+    {
+        getQuestions {
+            result
+        }
+    }
+`;
+
 const getNumRanged = () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     const currentDate = Math.floor(Math.floor(currentTimestamp / (60 * 60 * 24)));
@@ -54,12 +60,29 @@ const getNumRanged = () => {
     `;
 }
 
+function getQuestionText({ loading, error, data }) {
+    if (loading) {
+        return '...';
+    } else if (error) {
+        return 'ERR';
+    } else {
+        const len = data.getQuestions.length;
+        const trueCount = data.getQuestions.reduce((accum, record) => (accum + (record.result === "true" ? 1 : 0)), 0);
+        const falseCount = data.getQuestions.reduce((accum, record) => (accum + (record.result === "false" ? 1 : 0)), 0);
+        const percent = trueCount / len * 100;
+
+        return `${trueCount} / ${len} (${percent.toFixed(2)}%)`;
+    }
+}
+
 export default function DiscordBotView(props) {
     const classes = useStyles();
-    const { loading, error, data } = useQuery(GET_NUM, { pollInterval: 4000 });
+    const { loading: numLoading, error: numError, data: numData } = useQuery(GET_NUM, { pollInterval: 4000 });
     const { loading: dateLoading, error: dateError, data: dateData } = useQuery(getNumRanged());
-    const text = (loading ? '...' : (error ? 'ERR' : data.numWords));
+    const questionQuery = useQuery(GET_QUESTION);
+    const text = (numLoading ? '...' : (numError ? 'ERR' : numData.numWords));
     const text2 = (dateLoading ? '...' : (dateError ? 'ERR' : dateData.numUpdatedWords));
+    const questionText = getQuestionText(questionQuery);
 
     return (
         <div className={classes.mainClass}>
@@ -69,14 +92,20 @@ export default function DiscordBotView(props) {
                     <Grid item xs={4}>
                         <Paper className={classes.paper} elevation={3}>
                             <div className={classes.paperContainer}>
-                                <div className={classes.subText}>Number of stuff:</div>
+                                <div className={classes.subText}>Number of words:</div>
                                 <h3 className={classes.mainText}>{text}</h3>
                             </div>
                         </Paper>
                         <Paper className={classes.paper} elevation={3}>
                             <div className={classes.paperContainer}>
-                                <div className={classes.subText}>Number of recent stuff:</div>
+                                <div className={classes.subText}>Number of recent words (in 7 days):</div>
                                 <h3 className={classes.mainText}>{text2}</h3>
+                            </div>
+                        </Paper>
+                        <Paper className={classes.paper} elevation={3}>
+                            <div className={classes.paperContainer}>
+                                <div className={classes.subText}>Questions</div>
+                                <h3 className={classes.mainText}>{questionText}</h3>
                             </div>
                         </Paper>
                     </Grid>

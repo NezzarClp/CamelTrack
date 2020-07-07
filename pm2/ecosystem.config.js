@@ -2,11 +2,10 @@ module.exports = {
     apps: [
         {
             name: 'New discord bot',
-            script: 'node',
-            watch: true,
-            "ignore_watch" : ["node_modules", "temp"],
+            script: 'npm',
+            watch: ["src"],
             cwd: '/root/CamelTrack/Tamel',
-            args: 'build/index.js',
+            args: 'start',
         },
         {
             name: 'Track client',

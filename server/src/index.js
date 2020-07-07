@@ -1,9 +1,14 @@
 import express from 'express';
 import pg from 'pg';
+import bodyParser from 'body-parser';
+import multer from 'multer';
 
 import Server from './Server';
 
 import GraphQLRoute from './GraphQLRoute';
+import busboy from 'connect-busboy';
+
+import createCollectionRoute from './routes/createCollectionRoute';
 
 const config = require('./config');
 
@@ -19,16 +24,18 @@ const config = require('./config');
 
     const app = new express();
 
-    const collectionRoute = express.Router();
-
-    collectionRoute.post('/', (req, res) => {
-        res.send({ ok: 'ok' });
+    const jsonParser = bodyParser.json()
+    const urlencodedParser = bodyParser.urlencoded({ extended: false })
+    const uploadMulter = multer({
+        limit: {
+            fileSize: 1000 * 1000 * 50, // 50 MB
+        },
     });
 
-    collectionRoute.get('/', (req, res) => {
-        res.send({ ok: 'ok' });
-    });
+    app.use(jsonParser);
+    app.use(urlencodedParser);
 
+    const collectionRoute = createCollectionRoute(uploadMulter);
     const graphQLRoute = GraphQLRoute(pool);
 
     const routes = [

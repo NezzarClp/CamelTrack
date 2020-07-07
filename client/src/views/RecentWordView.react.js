@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
 
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 import RecentWordTable from '../components/Table/RecentWordTable.react.js';
+
+import useLocalStorage from '../hooks/useLocalStorage';
 
 const useStyles = makeStyles({
     paper: {
@@ -38,11 +39,15 @@ const useStyles = makeStyles({
 
 export default function RecentWordView(props) {
     const classes = useStyles();
-    const [numDay, setNumDay] = useState('');
-    const [numLastDay, setNumLastDay] = useState('0');
-    const [usedDay, setUsedDay] = useState('');
-    const [usedLastDay, setUsedLastDay] = useState('');
+    const [numDay, setNumDay] = useLocalStorage('numDay', '');
+    const [numLastDay, setNumLastDay] = useLocalStorage('numLastDay', '');
+    const [usedDay, setUsedDay] = useState(numDay);
+    const [usedLastDay, setUsedLastDay] = useState(numLastDay);
+    const [hideOptions, setHideOptions] = useLocalStorage('hideOptions', ['word', 'en']);
 
+    const handleHideOptions = (event, newOptions) => {
+        setHideOptions(newOptions);
+    };
     const onButtonClick = (event) => {
         setUsedDay(numDay);
         setUsedLastDay(numLastDay);
@@ -72,10 +77,18 @@ export default function RecentWordView(props) {
                             UPDATE
                         </Button>
                     </Grid>
+                    <ToggleButtonGroup value={hideOptions} onChange={handleHideOptions} aria-label="text formatting">
+                        <ToggleButton value="word" aria-label="bold">
+                            Kanji
+                        </ToggleButton>
+                        <ToggleButton value="en" aria-label="italic">
+                            English meaning
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                 </Grid>
                 <Grid item container xs={12} spacing={3}>
                     <Grid item xs={6}>
-                        <RecentWordTable numDay={usedDay} numLastDay={usedLastDay} />
+                        <RecentWordTable hideOptions={hideOptions} numDay={usedDay} numLastDay={usedLastDay} />
                     </Grid>
                 </Grid>
             </Grid>

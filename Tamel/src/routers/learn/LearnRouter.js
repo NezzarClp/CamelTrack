@@ -49,6 +49,47 @@ export default class LearnRouter {
         
     }
 
+    async _handleFind(message) {
+        const channel = message.channel;
+        const discordMessage = new DiscordMessage(channel);
+        await discordMessage.send('Searching word...');
+
+        const { content } = message;
+        const kanji = content.split(' ')[2];
+
+        const rows = await this._wordDao.getByKanji(kanji);
+
+        if (rows && rows.length > 0) {
+            const words = rows.map((row) => JSON.stringify(row)).join('\n');
+            await discordMessage.modify(`Word found:\n${words}`);
+        } else {
+            await discordMessage.modify('No such word');
+        }
+    }
+
+    async _handleDelete(message) {
+        const channel = message.channel;
+        const discordMessage = new DiscordMessage(channel);
+        await discordMessage.send('Searching word...');
+
+        const { content } = message;
+        const id = content.split(' ')[2];
+
+        const rows = await this._wordDao.getById(id);
+
+        if (rows && rows.length > 0) {
+            const words = rows.map((row) => JSON.stringify(row)).join('\n');
+            await discordMessage.modify(`Going to delete word\n${words}`);
+
+            const deleteConfirmMessage = new DiscordMessage(channel);
+            await this._wordDao.delete(id);
+            await deleteConfirmMessage.send(`Deleted word\n${words}`);
+        } else {
+            await discordMessage.modify('No such word');
+        }
+    }
+
+
     async onMessage(message) {
         const content = message.content;
         const params = content.split(' ');
@@ -62,6 +103,12 @@ export default class LearnRouter {
                 break;
             case 'list':
                 await this._handleList(message);
+                break;
+            case 'find':
+                await this._handleFind(message);
+                break;
+            case 'delete':
+                await this._handleDelete(message);
                 break;
             default:
                 break;

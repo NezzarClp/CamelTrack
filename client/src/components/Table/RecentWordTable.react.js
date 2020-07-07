@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -13,7 +13,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
-const getWordsByDay = (lowerDay, higherDay) => useQuery(gql`
+const useQueryWordsByDay = (lowerDay, higherDay, skip) => useQuery(gql`
     {
         getWords(lowerDay: ${lowerDay}, higherDay: ${higherDay}) {
             romaji
@@ -21,28 +21,59 @@ const getWordsByDay = (lowerDay, higherDay) => useQuery(gql`
             en
         }
     }
-`, { fetchPolicy: 'no-cache' });
+`, { fetchPolicy: 'no-cache', skip });
+
+function getDisplayField(hideOptions) {
+    if (!hideOptions.includes('en')) {
+        return 'word';
+    } else if (!hideOptions.includes('word')) {
+        return 'en';
+    } else {
+        const check = Math.random() * 2;
+        return check >= 1 ? 'en' : 'word';
+    }
+}
+
+function getTableData(loading, error, data, hideOptions) {
+    if (loading) {
+        return [<TableCell>...</TableCell>];
+    } else if (error) {
+        return [<TableCell>ERR</TableCell>];
+    } else {
+        const words = data.getWords;
+
+        for (let i = words.length - 1; i >= 0; i--) {
+            const index = Math.floor(Math.random() * i);
+
+            const temp = words[index];
+            words[index] = words[i];
+            words[i] = temp;
+        }
+
+        return words.map(({ romaji, en, word }) => {
+            const field = getDisplayField(hideOptions);
+            return (
+                <React.Fragment>
+                   <TableCell>{field === 'word' ? word : <SpoilerText>{word}</SpoilerText>}</TableCell>
+                   <TableCell><SpoilerText>{romaji}</SpoilerText></TableCell>
+                   <TableCell>{field === 'en' ? en : <SpoilerText>{en}</SpoilerText>}</TableCell>
+                </React.Fragment>
+            );
+        });
+    }
+}
 
 export default function RecentWordTable(props) {
-    const { numDay, numLastDay } = props;
+    const { numDay, hideOptions, numLastDay } = props;
+    const hasDay = (numDay && !isNaN(parseInt(numDay, 10)));
+    const days = parseInt(numDay, 10);
+    const { loading, error, data } = useQueryWordsByDay(days, parseInt(numLastDay, 10), !hasDay);
+    const [tableData, setTableData] = useState([]);
 
-    let tableData;
-
-    if (numDay && parseInt(numDay, 10) !== NaN) {
-        const days = parseInt(numDay, 10);
-        const { loading, error, data } = getWordsByDay(days, parseInt(numLastDay, 10));
-        tableData = loading ? [<TableCell>...</TableCell>] : 
-            (error ? [<TableCell>ERR</TableCell>] : 
-            data.getWords.map(({ romaji, en, word }) => (
-                <React.Fragment>
-                    <TableCell>{word}</TableCell>
-                    <TableCell><SpoilerText>{romaji}</SpoilerText></TableCell>
-                    <TableCell><SpoilerText>{en}</SpoilerText></TableCell>
-                </React.Fragment>
-            )));
-    } else {
-        tableData = [];
-    }
+    useEffect(() => {
+        const newTableData = (hasDay ? getTableData(loading, error, data, hideOptions) : []);;
+        setTableData(newTableData);
+    }, [loading, error, data, hasDay, hideOptions]);
 
     const tableRows = tableData.map((data, index) => (
         <TableRow key={index}>
