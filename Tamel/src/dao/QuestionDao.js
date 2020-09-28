@@ -85,6 +85,22 @@ export default class QuestionDao {
         }
     }
 
+    async getByTimestamp(timestamp) {
+        try {
+            const { rows } = await this._postgresPool.query(`
+                SELECT * FROM "Questions"
+                WHERE "created_dt" >= TO_TIMESTAMP($1);
+            `, [timestamp]);
+
+            return rows;
+        } catch (err) {
+            console.error('Failed to get questions by timestamp');
+            console.error(err);
+ 
+            throw err;
+        }
+    }
+
     async insert(record) {
         try {
             const { wordId } = record;

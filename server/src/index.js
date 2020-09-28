@@ -8,6 +8,7 @@ import Server from './Server';
 import GraphQLRoute from './GraphQLRoute';
 import busboy from 'connect-busboy';
 
+import createOAuthRoute from './routes/createOAuthRoute';
 import createCollectionRoute from './routes/createCollectionRoute';
 
 const config = require('./config');
@@ -35,6 +36,7 @@ const config = require('./config');
     app.use(jsonParser);
     app.use(urlencodedParser);
 
+    const oauthRoute = createOAuthRoute();
     const collectionRoute = createCollectionRoute(uploadMulter);
     const graphQLRoute = GraphQLRoute(pool);
 
@@ -42,6 +44,10 @@ const config = require('./config');
         {
             prefix: '/collection',
             route: collectionRoute,
+        },
+        {
+            prefix: '/oauth',
+            route: oauthRoute,
         },
         {
             prefix: '/graphql',

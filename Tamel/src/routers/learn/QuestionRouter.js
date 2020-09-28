@@ -1,13 +1,19 @@
 import DiscordMessage from '../../common/DiscordMessage';
 
 const DEFAULT_FETCH_PERIOD_SEC = 60 * 60; // 1 Hour
+const DEFAULT_TIME_SCAN_SEC = 60 * 60 * 24 * 15; // 15 Days
 
 export default class QuestionRouter {
-    constructor(client, wordDao, questionDao, fetchPeriodSec = DEFAULT_FETCH_PERIOD_SEC) {
+    constructor(client, wordDao, questionDao, fetchPeriodSec = DEFAULT_FETCH_PERIOD_SEC, scanTimestampSec = DEFAULT_TIME_SCAN_SEC) {
         this._client = client;
         this._wordDao = wordDao;
         this._questionDao = questionDao;
         this._fetchPeriodSec = fetchPeriodSec;
+        this._scanTimestampSec = scanTimestampSec;
+    }
+
+    async _genQuestions() {
+        const wordIds = await this._wordDao.getAllIds();
     }
 
     async _insertQuestion() {
@@ -27,13 +33,23 @@ export default class QuestionRouter {
 
         if (shouldInsert) {
             const chatChannel = this._client.channels.cache.find((channel) => { return channel.name === "bot-chats" });
+            const debugChannel = this._client.channels.cache.find((channel) => { return channel.name === "bot-logs" });
             const message = new DiscordMessage(chatChannel);
 
             const row = (await this._wordDao.getRandomWord(1));
             const { id: wordId, kanji } = row[0];
 
             const questionId = await this._questionDao.insert({ wordId });
-            const currentTime = (new Date()).toISOString();
+            const currentTimestamp = (new Date());
+            const currentTime = currentTimestamp.toISOString();
+            const fetchTimestamp = currentTimestamp / 1000 -  this._scanTimestampSec;
+            const data = await this._questionDao.getByTimestamp(fetchTimestamp);
+            const debugText = JSON.stringify(data).slice(0, 200);
+
+            (new DiscordMessage(debugChannel)).send(debugText);
+
+            await this._genQuestions();
+
             const text = `==========\nQuestion Id: ${questionId}, kanji: ${kanji}\nTime: ${currentTime}\n=========`;
             message.send(text, { imageUrl: 'hamster/question.png' });
         }

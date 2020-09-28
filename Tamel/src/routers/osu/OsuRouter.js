@@ -18,16 +18,21 @@ const sheets = google.sheets({
 
 const osuApiClient = {
     get: async (url, params) => {
-        const fullUrl = `https://osu.ppy.sh/api/${url}`;        
+        try {
+            const fullUrl = `https://osu.ppy.sh/api/${url}`;        
+            const { data } = await axios.get(fullUrl, {
+                params: {
+                    ...params,
+                    k: config.osuApiKey,
+                },
+            });
 
-        const { data } = await axios.get(fullUrl, {
-            params: {
-                ...params,
-                k: config.osuApiKey,
-            },
-        });
+            return data;
+        } catch (err) {
+            console.error('Failed to get osu data', err);
 
-        return data;
+            throw err;
+        }
     }
 }
 
@@ -63,7 +68,7 @@ class CollectionDbParser {
 
     injectCollection(name, md5s) {
         if (!this._parsed) {
-            throw new Error('No data');
+            throw new Error('no data');
         }
 
         this._numCollections++;
@@ -77,7 +82,7 @@ class CollectionDbParser {
 
     write(fileSrc) {
         if (!this._parsed) {
-            throw new Error('No data');
+            throw new Error('no data');
         }
 
         let buffer = new OsuBuffer();
@@ -188,7 +193,7 @@ export default class OsuRouter {
                 await (new Promise((resolve, reject) => {
                     const writeStream = fs.createWriteStream(`../storage/osz/${sid}.osz`);
 
-                    data.on('error', (err) => { reject(err); });
+                    data.on('error', (err) => { console.error('Failed to save stream', err); reject(err); });
                     data.on('end', () => { resolve(); });
 
                     data.pipe(writeStream);
@@ -208,7 +213,7 @@ export default class OsuRouter {
 
             await execPromise(command);
 
-            progressMessage.modify(`Zipped http://142.93.195.94/public/zip/${zipId}.zip`);
+            progressMessage.modify(`Zipped https://142.93.195.94/public/zip/${zipId}.zip`);
 
             const collectionMessage = new DiscordMessage(channel);
 
@@ -227,7 +232,7 @@ export default class OsuRouter {
             parser.injectCollection(collectionName, md5s);
             parser.write(`../storage/collection/${newCollectionName}`);
 
-            collectionMessage.modify(`Injected ${collectionName} http://142.93.195.94/public/collection/${newCollectionName}`);
+            collectionMessage.modify(`Injected ${collectionName} https://142.93.195.94/public/collection/${newCollectionName}`);
         } catch (err) {
             console.error('Failed to fetch osu details', err);
 

@@ -25,8 +25,6 @@ export default function (pgPool) {
                 SELECT * FROM "Questions";
             `);
 
-            console.log('rows is ', rows);
-
             return rows.map(({ id, wordId, result }) => {
                 return new Question(id, wordId, result);
             });

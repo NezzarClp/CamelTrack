@@ -31,7 +31,7 @@ export default function MiscView(props) {
         const formData = new FormData();
         formData.append('file', file);
 
-        const res = await axios.post('http://142.93.195.94/api/collection', formData);
+        const res = await axios.post('https://142.93.195.94/api/collection', formData);
  
         if (res.error) {
             setServerResponse('Error...');

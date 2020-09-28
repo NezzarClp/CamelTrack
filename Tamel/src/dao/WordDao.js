@@ -18,6 +18,21 @@ export default class WordDao {
         }
     }
 
+    async getAllIds() {
+        try {
+            const { rows } = await this._postgresPool.query(`
+                SELECT "id" from "word";
+            `);
+
+            return rows;
+        } catch (err) {
+            console.error('Failed to get all words by IDs');
+            console.error(err);
+
+            throw err;
+        }
+    }
+
     async getByKanji(kanji) {
         try {
             const { rows } = await this._postgresPool.query(`

@@ -21,7 +21,7 @@ const views = {
     'Master': DiscordBotView,
     'Recent word': RecentWordView,
     'Misc': MiscView,
-    'Collection': CollectionView,
+    // 'Collection': CollectionView,
 };
 
 function App() {
