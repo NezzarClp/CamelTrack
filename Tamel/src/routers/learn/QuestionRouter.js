@@ -1,4 +1,5 @@
 import DiscordMessage from '../../common/DiscordMessage';
+import Promise from 'bluebird';
 
 const DEFAULT_FETCH_PERIOD_SEC = 60 * 60; // 1 Hour
 const DEFAULT_TIME_SCAN_SEC = 60 * 60 * 24 * 15; // 15 Days
@@ -12,8 +13,34 @@ export default class QuestionRouter {
         this._scanTimestampSec = scanTimestampSec;
     }
 
-    async _genQuestions() {
+    _calculateScore(trueCount, falseCount, totalQuestions) {
+        const ratioScore = falseCount / (trueCount + falseCount + 1); 
+        const attemptScore = Math.sqrt(4) * Math.sqrt(Math.log(totalQuestions) / (trueCount + falseCount + 1));
+
+        return ratioScore + attemptScore;
+    }
+
+    async _genQuestions(channel) {
         const wordIds = await this._wordDao.getAllIds();
+        const sudoMessage = new DiscordMessage(channel);
+
+        sudoMessage.send(`Length: ${wordIds.length}`);
+        
+        const questionCount = await this._questionDao.getCount();
+        const weights = await Promise.map(wordIds, async ({ id }) => {
+            const questions = await this._questionDao.getByWordId(id);
+            const total = questions.length;
+            const trueCount = questions.filter((question) => question.result === "true").length;
+            const falseCount = questions.filter((question) => question.result === "false").length; 
+            const word = await this._wordDao.getById(id);
+            
+            const score = this._calculateScore(trueCount, falseCount, questionCount);
+
+            return score;
+        }, { concurrency: 10 });
+
+        const totalWeight = weights.reduce((accum, cur) => (accum + cur), 0);
+        sudoMessage.send(`total weight ${totalWeight}`);
     }
 
     async _insertQuestion() {
@@ -24,12 +51,12 @@ export default class QuestionRouter {
             const { created_dt } = rows[0];
             const timestamp = (new Date(created_dt)).getTime();
 
-            console.log('diff', Date.now() - timestamp);
-
             shouldInsert = (Date.now() - timestamp >= this._fetchPeriodSec * 1000);
         } else {
             shouldInsert = true;
         }
+            const debugChannel = this._client.channels.cache.find((channel) => { return channel.name === "bot-logs" });
+            await this._genQuestions(debugChannel);
 
         if (shouldInsert) {
             const chatChannel = this._client.channels.cache.find((channel) => { return channel.name === "bot-chats" });
@@ -48,7 +75,6 @@ export default class QuestionRouter {
 
             (new DiscordMessage(debugChannel)).send(debugText);
 
-            await this._genQuestions();
 
             const text = `==========\nQuestion Id: ${questionId}, kanji: ${kanji}\nTime: ${currentTime}\n=========`;
             message.send(text, { imageUrl: 'hamster/question.png' });

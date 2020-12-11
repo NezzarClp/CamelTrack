@@ -23,11 +23,11 @@ const redisConfig = config.redis;
 const pSQLDbConfig = config.pSQLDbConfig;
 
 // DB Clients
-const redisClient = new Redis({
+/* const redisClient = new Redis({
     host: redisConfig.host,
     port: redisConfig.port,
     password: redisConfig.password,
-});
+}); */
 const pSQLDbPool = new pg.Pool({
     host: pSQLDbConfig.host,
     user: pSQLDbConfig.username,

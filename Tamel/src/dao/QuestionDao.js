@@ -3,6 +3,21 @@ export default class QuestionDao {
         this._postgresPool = postgresPool;
     }
 
+    async getCount() {
+        try {
+            const { rows } = await this._postgresPool.query(`
+                SELECT COUNT(*) as count from "Questions";
+            `);
+        
+            return rows[0].count;
+        } catch (err) {
+            console.error('Failed to get count');
+            console.error(err);
+
+            throw err;
+        }
+    }
+
     async getById(id) {
         try {
             const { rows } = await this._postgresPool.query(`
@@ -14,7 +29,6 @@ export default class QuestionDao {
         } catch (err) {
             console.error('Failed to get by ID');
             console.error(err);
-            console.error(record);
 
             throw err;
         }
